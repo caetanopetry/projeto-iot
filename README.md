@@ -131,26 +131,4 @@ A execução do link e a compatibilidade integral do `.ino` físico com o Tinker
 | `imagens/prototipo-fisico/` | Destinado às futuras fotos da montagem real |
 | `simulador/` | Link e informações de reprodução no Tinkercad |
 
-## Documentação e validação
 
-- [Documentação técnica atualizada (PDF)](docs/Documentacao_Tecnica.pdf)
-- [Documentação técnica editável (DOCX)](docs/Documentacao_Tecnica_Editavel.docx)
-- [Critérios avaliativos do SENAI (PDF)](docs/Criterios_Avaliacao_SENAI.pdf)
-- [Histórico de revisão e roteiro de testes](docs/Historico_e_Testes.md)
-- [Documentação anterior (para registro de evolução)](docs/historico/Documentacao_Anterior.pdf)
-
-O desafio do professor solicita **quatro componentes distintos além de LEDs, botões e resistores**. No projeto, o sensor, o display LCD, o teclado matricial e o buzzer são quatro componentes distintos utilizados em sensoriamento, interface e sinalização. O checklist também avalia funcionamento, integração, qualidade do código, documentação, simulação e **registro de versões com comentários de alterações**. Por isso, além do histórico documental, é importante manter commits descritivos no Git.
-
-### Pontos conhecidos a validar antes da apresentação
-
-- A tecla `3` grava a leitura atual sem validar o intervalo; ao reiniciar, somente valores maiores que 100 e até 600 são recuperados.
-- **Não salve a leitura 600 como limite sem corrigir o código:** pode ocorrer divisão por zero no cálculo dos intervalos do buzzer.
-- Caso o limite esteja abaixo de 450, pode aparecer a condição visual de perigo antes de o buzzer começar a tocar.
-- Confirme os testes com o Arduino real e com o projeto do Tinkercad. **Os resultados de funcionamento não foram declarados como verificados** aqui.
-
-## Histórico de alterações
-
-- **Versão anterior:** documentação com sensor de umidade do solo, teclado 4×4, cronômetro e biblioteca `Adafruit_LiquidCrystal`.
-- **Revisão documental de 19/11/2026:** atualização do sensor real, teclado 4×3, código com `LiquidCrystal_I2C`, leitura de referência 600, limite salvo em EEPROM e alertas de buzzer; remoção do cronômetro.
-
-Registre cada evolução por meio de **commits no Git** e descreva a alteração de código ou montagem realizada. As datas acima representam revisões documentais; não equivalem a commits antigos recuperados.
