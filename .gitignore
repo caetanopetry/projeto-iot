@@ -1,0 +1,20 @@
+# Arquivos gerados por IDEs e compilacao Arduino
+*.hex
+*.elf
+*.eep
+*.bin
+*.map
+*.o
+*.a
+*.d
+build/
+
+# Temporarios e arquivos de sistema
+.DS_Store
+Thumbs.db
+*~
+*.tmp
+
+# Arquivos privados e configuracoes locais
+.vscode/
+.idea/

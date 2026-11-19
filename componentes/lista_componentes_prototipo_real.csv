@@ -1,0 +1,12 @@
+﻿Nome,Quantidade,Componente
+U1,1,Arduino Uno R3
+SEN1,1,Sensor resistivo de nível de água - 3 pinos S/+/-
+LCD1,1,Display LCD 16x2 com modulo I2C - endereco fisico 0x27
+KEYPAD1,1,Teclado matricial de membrana 4x3
+BZ1,1,Buzzer piezoeletrico passivo
+"D1, D2",2,LED verde
+D3,1,LED amarelo
+D4,1,LED vermelho
+"R1, R2, R3, R4",4,Resistor 220 ohms
+BB1,1,Protoboard
+CABOS,Conforme montagem,Fios jumper e cabo USB
