@@ -1,0 +1,502 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>README - Indicador de Nível de Água</title><style>:root{color-scheme:light;--bg:#f6f8fa;--card:#fff;--text:#24292f;--border:#d0d7de}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.6}.page{max-width:980px;margin:32px auto;padding:32px 48px;background:var(--card);border:1px solid var(--border);border-radius:10px}h1,h2,h3{line-height:1.25;border-bottom:1px solid #d8dee4;padding-bottom:.3em}h1{font-size:2.25em}h2{font-size:1.5em;margin-top:1.5em}a{color:#0969da;text-decoration:none}table{width:100%;border-collapse:collapse;margin:16px 0}th,td{border:1px solid var(--border);padding:8px 12px}tr:nth-child(2n){background:#f6f8fa}img{max-width:100%;border-radius:6px}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',monospace;background:#f6f8fa;border-radius:6px}code{padding:.2em .4em;font-size:85%}pre{padding:16px;overflow:auto}blockquote{margin:16px 0;padding:0 1em;color:#57606a;border-left:.25em solid #d0d7de}@media(max-width:700px){.page{margin:0;padding:24px 16px;border:0;border-radius:0}}</style></head><body><main class="page"><h1>Indicador de Nível de Água com Arduino</h1>
+<p><img src="https://img.shields.io/badge/Plataforma-Arduino%20Uno-00979D" alt="Arduino">
+<img src="https://img.shields.io/badge/Linguagem-C%2B%2B-00599C" alt="Linguagem">
+<img src="https://img.shields.io/badge/Status-Prot%C3%B3tipo%20funcional-2EA44F" alt="Status"></p>
+<p>Este projeto foi desenvolvido para a disciplina <strong>Internet das Coisas</strong>. O objetivo é monitorar o nível de água com um sensor resistivo e avisar visualmente e sonoramente quando o nível sobe.</p>
+<p>O Arduino recebe o sinal do sensor, acende LEDs, controla o buzzer, mostra os dados em um LCD e permite mudar o limite de perigo usando um teclado.</p>
+<p align="center">
+  <img src="imagens/montagem-tinkercad.png" alt="Circuito montado no Tinkercad" width="85%">
+</p><h2>Conteúdo</h2>
+<ul>
+<li><a href="#objetivo-do-projeto">Objetivo do projeto</a></li>
+<li><a href="#componentes">Componentes</a></li>
+<li><a href="#liga%C3%A7%C3%B5es">Ligações</a></li>
+<li><a href="#funcionamento">Funcionamento</a></li>
+<li><a href="#teclas-do-teclado">Teclas do teclado</a></li>
+<li><a href="#como-executar">Como executar</a></li>
+<li><a href="#calibra%C3%A7%C3%A3o">Calibração</a></li>
+<li><a href="#simula%C3%A7%C3%A3o-no-tinkercad">Simulação no Tinkercad</a></li>
+<li><a href="#testes-realizados">Testes realizados</a></li>
+<li><a href="#limita%C3%A7%C3%B5es">Limitações</a></li>
+<li><a href="#estrutura-do-projeto">Estrutura do projeto</a></li>
+<li><a href="#autores">Autores</a></li>
+</ul>
+<h2>Objetivo do projeto</h2>
+<p>Criar um protótipo capaz de indicar o nível aproximado de água e avisar quando o limite configurado for atingido.</p>
+<p>O sistema utiliza:</p>
+<ul>
+<li>LEDs para indicar as faixas de nível;</li>
+<li>um buzzer para emitir os alertas;</li>
+<li>um display LCD para mostrar a leitura;</li>
+<li>um teclado para controlar o buzzer e salvar o limite;</li>
+<li>a memória EEPROM para manter o limite após desligar o Arduino.</li>
+</ul>
+<blockquote>
+<p>A leitura não representa uma medida exata em centímetros. Ela depende da calibração e das características do sensor utilizado.</p>
+</blockquote>
+<h2>Componentes</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Quantidade</th>
+<th>Componente</th>
+<th>Finalidade</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td>Arduino Uno R3</td>
+<td>Controla o sensor, LEDs, buzzer, LCD e teclado</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td>Sensor resistivo de nível de água</td>
+<td>Mede o nível pela leitura analógica</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td>LCD 16×2 com módulo I2C</td>
+<td>Mostra a leitura, o percentual e o estado do buzzer</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td>Teclado matricial 4×3</td>
+<td>Permite mudar o som e gravar o limite</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td>Buzzer</td>
+<td>Emite o alerta sonoro</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td>LEDs verdes</td>
+<td>Indicam os níveis de 25% e 50%</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td>LED amarelo</td>
+<td>Indica o nível de 75%</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td>LED vermelho</td>
+<td>Indica o limite de perigo</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>Resistores de 220 Ω</td>
+<td>Protegem os LEDs</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td>Protoboard</td>
+<td>Montagem do circuito</td>
+</tr>
+<tr>
+<td align="right">-</td>
+<td>Fios jumper e cabo USB</td>
+<td>Ligações e alimentação</td>
+</tr>
+</tbody></table>
+<p>Lista completa: <a href="componentes/lista_componentes_prototipo_real.csv">lista de componentes da montagem física</a>.</p>
+<p align="center">
+  <img src="imagens/sensor-nivel-agua-real.png" alt="Sensor resistivo de nível de água" width="45%">
+</p><h2>Ligações</h2>
+<table>
+<thead>
+<tr>
+<th>Pino do Arduino</th>
+<th>Ligação</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>A0</code></td>
+<td>Sinal <code>S</code> do sensor de nível</td>
+</tr>
+<tr>
+<td><code>5V</code></td>
+<td>Terminal positivo <code>+</code> do sensor e VCC do LCD</td>
+</tr>
+<tr>
+<td><code>GND</code></td>
+<td>Terminal negativo <code>-</code> do sensor, GND do LCD, buzzer e LEDs</td>
+</tr>
+<tr>
+<td><code>A4</code> / <code>SDA</code></td>
+<td>SDA do LCD</td>
+</tr>
+<tr>
+<td><code>A5</code> / <code>SCL</code></td>
+<td>SCL do LCD</td>
+</tr>
+<tr>
+<td><code>D8</code>, <code>D7</code>, <code>D6</code>, <code>D5</code></td>
+<td>Linhas do teclado 4×3</td>
+</tr>
+<tr>
+<td><code>D4</code>, <code>D3</code>, <code>D2</code></td>
+<td>Colunas do teclado 4×3</td>
+</tr>
+<tr>
+<td><code>D9</code></td>
+<td>LED verde 1, com resistor de 220 Ω</td>
+</tr>
+<tr>
+<td><code>D10</code></td>
+<td>LED verde 2, com resistor de 220 Ω</td>
+</tr>
+<tr>
+<td><code>D11</code></td>
+<td>LED amarelo, com resistor de 220 Ω</td>
+</tr>
+<tr>
+<td><code>D12</code></td>
+<td>LED vermelho, com resistor de 220 Ω</td>
+</tr>
+<tr>
+<td><code>D13</code></td>
+<td>Positivo do buzzer</td>
+</tr>
+</tbody></table>
+<h3>Mapa do teclado</h3>
+<table>
+<thead>
+<tr>
+<th align="center">Linha</th>
+<th align="center">Teclas</th>
+<th align="center">Pino</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center"><code>1</code> <code>2</code> <code>3</code></td>
+<td align="center"><code>D8</code></td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center"><code>4</code> <code>5</code> <code>6</code></td>
+<td align="center"><code>D7</code></td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center"><code>7</code> <code>8</code> <code>9</code></td>
+<td align="center"><code>D6</code></td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center"><code>*</code> <code>0</code> <code>#</code></td>
+<td align="center"><code>D5</code></td>
+</tr>
+</tbody></table>
+<p>As três colunas correspondem, nesta ordem, aos pinos <code>D4</code>, <code>D3</code> e <code>D2</code>.</p>
+<blockquote>
+<p>Antes de ligar o teclado, confira a posição das linhas e colunas no modelo utilizado. Os terminais podem variar conforme o fabricante.</p>
+</blockquote>
+<h2>Funcionamento</h2>
+<p>O sensor envia uma leitura analógica para o pino <code>A0</code>. O código considera <code>600</code> como o valor máximo e converte a leitura em uma porcentagem entre 0% e 100%.</p>
+<p>Os LEDs ficam ligados da seguinte forma:</p>
+<table>
+<thead>
+<tr>
+<th>Leitura</th>
+<th>LEDs ligados</th>
+<th>Buzzer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0 a 149</td>
+<td>Nenhum</td>
+<td>Silencioso</td>
+</tr>
+<tr>
+<td>150 a 299</td>
+<td>Verde 1</td>
+<td>Silencioso</td>
+</tr>
+<tr>
+<td>300 a 449</td>
+<td>Verde 1 e verde 2</td>
+<td>Silencioso</td>
+</tr>
+<tr>
+<td>450 até antes do limite</td>
+<td>Verde 1, verde 2 e amarelo</td>
+<td>Bip lento</td>
+</tr>
+<tr>
+<td>Limite ou leitura maior</td>
+<td>Todos os LEDs</td>
+<td>Alerta acelerado</td>
+</tr>
+</tbody></table>
+<p>O limite inicial é <code>480</code>, que corresponde a 80% do valor máximo considerado pelo programa.</p>
+<p>Quando o nível atinge o limite, o LCD mostra <code>PERIGO: 100%</code>. Essa mensagem significa que o limite configurado foi atingido, não que o sensor esteja completamente submerso.</p>
+<h3>O que aparece no LCD</h3>
+<table>
+<thead>
+<tr>
+<th>Linha</th>
+<th>Conteúdo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Primeira linha</td>
+<td>Leitura bruta do sensor e estado do som: <code>SOM</code> ou <code>MUDO</code></td>
+</tr>
+<tr>
+<td>Segunda linha</td>
+<td><code>Nivel: xx%</code> ou <code>PERIGO: 100%</code></td>
+</tr>
+</tbody></table>
+<p>A tela é atualizada aproximadamente a cada 120 ms.</p>
+<h2>Teclas do teclado</h2>
+<table>
+<thead>
+<tr>
+<th align="center">Tecla</th>
+<th>Função</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><code>1</code></td>
+<td>Desliga o buzzer</td>
+</tr>
+<tr>
+<td align="center"><code>2</code></td>
+<td>Liga o buzzer</td>
+</tr>
+<tr>
+<td align="center"><code>3</code></td>
+<td>Salva a leitura atual como novo limite de perigo</td>
+</tr>
+<tr>
+<td align="center"><code>#</code></td>
+<td>Mostra as informações das teclas no LCD por 1 segundo</td>
+</tr>
+</tbody></table>
+<p>Ao pressionar <code>3</code>, o limite é salvo no endereço <code>0</code> da EEPROM. Dessa forma, o valor continua armazenado após desligar ou reiniciar o Arduino.</p>
+<p>Na primeira inicialização, o sistema usa o limite padrão <code>480</code> caso não exista um valor válido salvo.</p>
+<h2>Como executar</h2>
+<h3>Materiais necessários</h3>
+<ul>
+<li>Arduino Uno;</li>
+<li>cabo USB;</li>
+<li>componentes da <a href="componentes/lista_componentes_prototipo_real.csv">lista do projeto</a>;</li>
+<li><a href="https://www.arduino.cc/en/software">Arduino IDE</a>.</li>
+</ul>
+<h3>Bibliotecas</h3>
+<table>
+<thead>
+<tr>
+<th>Biblioteca</th>
+<th>Como instalar</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Wire</code></td>
+<td>Já vem na Arduino IDE</td>
+<td>Comunicação I2C</td>
+</tr>
+<tr>
+<td><code>EEPROM</code></td>
+<td>Já vem na Arduino IDE</td>
+<td>Gravação do limite</td>
+</tr>
+<tr>
+<td><code>LiquidCrystal I2C</code></td>
+<td>Gerenciador de Bibliotecas</td>
+<td>Controle do LCD</td>
+</tr>
+<tr>
+<td><code>Keypad</code></td>
+<td>Gerenciador de Bibliotecas</td>
+<td>Leitura do teclado</td>
+</tr>
+</tbody></table>
+<h3>Passo a passo</h3>
+<ol>
+<li>Monte o circuito seguindo a tabela de <a href="#liga%C3%A7%C3%B5es">ligações</a>.</li>
+<li>Abra o arquivo <a href="codigo/Indicador_Nivel_Agua.ino"><code>codigo/Indicador_Nivel_Agua.ino</code></a> na Arduino IDE.</li>
+<li>Instale as bibliotecas <code>LiquidCrystal I2C</code> e <code>Keypad</code>, caso ainda não estejam disponíveis.</li>
+<li>Selecione <strong>Arduino Uno</strong> em <strong>Ferramentas &gt; Placa</strong>.</li>
+<li>Selecione a porta correta em <strong>Ferramentas &gt; Porta</strong>.</li>
+<li>Clique em <strong>Verificar</strong> e depois em <strong>Carregar</strong>.</li>
+<li>Acompanhe os LEDs e as mensagens no LCD.</li>
+</ol>
+<p>No código, o endereço do LCD é definido como <code>0x27</code> e os pinos do teclado seguem o mapa apresentado anteriormente.</p>
+<h2>Calibração</h2>
+<ol>
+<li>Deixe o sensor seco e confirme que os LEDs estão apagados.</li>
+<li>Confirme que o buzzer está silencioso.</li>
+<li>Molhe o sensor aos poucos e observe os LEDs em 150, 300 e 450.</li>
+<li>Coloque o nível que deverá ser considerado perigoso.</li>
+<li>Pressione a tecla <code>3</code> para salvar esse valor.</li>
+<li>Reinicie o Arduino e confira se o mesmo limite continua ativo.</li>
+</ol>
+<p>Se o sensor utilizado atingir uma leitura diferente de <code>600</code> quando estiver completamente molhado, ajuste esta linha no código:</p>
+<pre><code class="language-cpp">const int VALOR_MAX_SENSOR = 600;
+</code></pre>
+<p>Também é possível alterar o limite inicial:</p>
+<pre><code class="language-cpp">int limiteCheio = 480;
+</code></pre>
+<p>Os valores do limite entre <code>101</code> e <code>600</code> são aceitos na EEPROM. O limite padrão retorna a <code>480</code> caso o valor salvo não esteja nessa faixa.</p>
+<h2>Simulação no Tinkercad</h2>
+<p>Abra o projeto da simulação:</p>
+<p><a href="https://www.tinkercad.com/things/gcfk48sRPLc-projeto-sa-prevencao-de-alagamentos-residenciaias/editel?sharecode=hNlV0GFYj3YyVG4pCysihhe0_Woj0avjWztFcsteBuY"><img src="https://img.shields.io/badge/Abrir%20projeto%20no-Tinkercad-1477D1" alt="Abrir no Tinkercad"></a></p>
+<h3>Diferenças entre o simulador e o projeto físico</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Tinkercad</th>
+<th>Protótipo físico</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sensor</td>
+<td>Sensor de umidade do solo</td>
+<td>Sensor resistivo de nível de água</td>
+</tr>
+<tr>
+<td>Teclado</td>
+<td>4×4</td>
+<td>4×3</td>
+</tr>
+<tr>
+<td>LCD I2C</td>
+<td>Endereço informado como <code>0x20</code></td>
+<td>Endereço usado no código: <code>0x27</code></td>
+</tr>
+<tr>
+<td>Interruptor DIP</td>
+<td>Aparece na montagem exportada</td>
+<td>Não é usado pelo programa</td>
+</tr>
+</tbody></table>
+<p>O Tinkercad não possui exatamente todos os componentes usados na montagem real. Por isso, a exportação original foi mantida como referência da simulação, enquanto a lista física é a recomendada para montar o protótipo real.</p>
+<ul>
+<li><a href="componentes/bom_tinkercad_original.csv">Lista original exportada pelo Tinkercad</a></li>
+<li><a href="componentes/README.md">Notas sobre componentes</a></li>
+<li><a href="simulador/README.md">Notas sobre a simulação</a></li>
+</ul>
+<h2>Testes realizados</h2>
+<p>Os testes abaixo podem ser usados como roteiro de avaliação:</p>
+<table>
+<thead>
+<tr>
+<th>Teste</th>
+<th>Ação</th>
+<th>Resultado esperado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Inicialização</td>
+<td>Reiniciar o Arduino</td>
+<td>LCD informa que o sistema está pronto</td>
+</tr>
+<tr>
+<td>Sensor seco</td>
+<td>Não molhar o sensor</td>
+<td>Nenhum LED ligado e buzzer silencioso</td>
+</tr>
+<tr>
+<td>25%</td>
+<td>Nível próximo de 150</td>
+<td>Verde 1 ligado</td>
+</tr>
+<tr>
+<td>50%</td>
+<td>Nível próximo de 300</td>
+<td>Verde 1 e verde 2 ligados</td>
+</tr>
+<tr>
+<td>75%</td>
+<td>Nível próximo de 450</td>
+<td>LEDs verdes e amarelo ligados; buzzer começa a apitar</td>
+</tr>
+<tr>
+<td>Limite</td>
+<td>Atingir o limite configurado</td>
+<td>Todos os LEDs ligados e alerta acelerado</td>
+</tr>
+<tr>
+<td>Tecla <code>1</code></td>
+<td>Pressionar <code>1</code></td>
+<td>Buzzer silenciado</td>
+</tr>
+<tr>
+<td>Tecla <code>2</code></td>
+<td>Pressionar <code>2</code></td>
+<td>Buzzer reativado</td>
+</tr>
+<tr>
+<td>Tecla <code>3</code></td>
+<td>Pressionar <code>3</code></td>
+<td>Valor atual salvo na EEPROM</td>
+</tr>
+<tr>
+<td>Tecla <code>#</code></td>
+<td>Pressionar <code>#</code></td>
+<td>Mensagem de ajuda no LCD</td>
+</tr>
+<tr>
+<td>Reinicialização</td>
+<td>Desligar e ligar novamente</td>
+<td>Limite configurado permanece salvo</td>
+</tr>
+</tbody></table>
+<h2>Limitações</h2>
+<ul>
+<li>Durante as mensagens exibidas no LCD, o programa aguarda por 1 segundo e não atualiza o sensor nesse intervalo.</li>
+<li>Um limite inferior a <code>450</code> pode acender o LED vermelho antes de o alerta sonoro começar.</li>
+<li>Valores entre <code>101</code> e <code>599</code> são recomendados para o limite.</li>
+<li>O limite <code>600</code> pode causar problema no cálculo da velocidade do alerta crítico.</li>
+<li>O texto <code>MUDO</code> pode ficar apertado no lado direito do LCD.</li>
+<li>O sensor pode variar conforme a condutividade da água, a oxidação e a sujeira nas trilhas.</li>
+<li>A tecla <code>#</code> apenas mostra o menu por alguns segundos.</li>
+<li>Os valores medidos são aproximados e o protótipo não substitui equipamentos profissionais de prevenção contra alagamentos.</li>
+</ul>
+<h2>Estrutura do projeto</h2>
+<pre><code class="language-text">projeto-iot/
+├── codigo/
+│   └── Indicador_Nivel_Agua.ino
+├── componentes/
+│   ├── README.md
+│   ├── lista_componentes_prototipo_real.csv
+│   └── bom_tinkercad_original.csv
+├── docs/
+│   └── Documentacao_SA_Indicador_Nivel_Agua.pdf
+├── imagens/
+│   ├── montagem-tinkercad.png
+│   └── sensor-nivel-agua-real.png
+├── simulador/
+│   └── README.md
+├── .gitignore
+└── README.md
+</code></pre>
+<p>Documentação técnica completa: <a href="docs/Documentacao_SA_Indicador_Nivel_Agua.pdf">PDF do projeto</a>.</p>
+<h2>Autores</h2>
+<p>Projeto desenvolvido para a disciplina <strong>Internet das Coisas</strong> do <strong>SENAI/SC</strong>, turma <strong>TDESS V01/2025</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Nome</th>
+<th>Função</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Caetano Gbur Petry</td>
+<td>Estudante</td>
+</tr>
+<tr>
+<td>Guilherme Arthur Silveira</td>
+<td>Estudante</td>
+</tr>
+<tr>
+<td>Sergio Luiz da Silveira</td>
+<td>Docente</td>
+</tr>
+</tbody></table>
+</main></body></html>
