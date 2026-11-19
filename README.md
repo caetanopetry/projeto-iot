@@ -1,134 +1,201 @@
-# Indicador de Nível de Água com Arduino UNO
+# Indicador de Nível de Água com Arduino Uno
 
-Protótipo de monitoramento de nível de água com **Arduino UNO**, alertas visuais por LEDs, avisos sonoros por buzzer, informações no display LCD e ajuste do limite de perigo pelo teclado matricial.
+![Plataforma](https://img.shields.io/badge/plataforma-Arduino%20Uno-00979D?logo=arduino&logoColor=white)
+![Linguagem](https://img.shields.io/badge/linguagem-C%2B%2B%20(Arduino)-blue)
+![Status](https://img.shields.io/badge/status-protótipo%20funcional-success)
 
-Projeto desenvolvido para a avaliação prática da unidade curricular **Internet das Coisas (IoT)** do **SENAI/SC**.
-
-**Integrantes:** Caetano Gbur Petry e Guilherme Arthur Silveira  
-**Turma:** TDESS V01/2025  
-**Professor:** Sergio Luiz da Silveira
+Protótipo de monitoramento de nível de água para **prevenção de transbordamentos residenciais**. Um sensor de nível envia um sinal analógico ao Arduino, que sinaliza a elevação da água por meio de **LEDs**, **buzzer** e **display LCD**, e permite ajustar o ponto de perigo diretamente pelo **teclado de membrana**, com o valor salvo na memória EEPROM.
 
 ![Circuito montado no Tinkercad](imagens/montagem-tinkercad.png)
 
-> **Importante:** a imagem acima representa a **simulação no Tinkercad**. A versão física utiliza outro sensor de água e um teclado **4×3**, conforme descrito abaixo. O sensor de umidade do solo do CSV de exportação **não é o sensor utilizado no protótipo real**.
+*Circuito simulado no Tinkercad. No protótipo físico, o sensor de umidade do solo e o teclado 4×4 do simulador são substituídos pelo sensor de nível de água e pelo teclado 4×3 (veja [Simulação e protótipo físico](#simulação-e-protótipo-físico)).*
 
-## Sobre o projeto
+## Sumário
 
-A proposta é acompanhar a elevação da água em um reservatório e emitir alertas conforme a leitura analógica do sensor. O Arduino atualiza quatro LEDs progressivamente, mostra a leitura e o estado do buzzer no LCD 16×2, e permite salvar na EEPROM uma leitura de referência para a condição de perigo.
+- [Funcionalidades](#funcionalidades)
+- [Componentes](#componentes)
+- [Circuito e ligações](#circuito-e-ligações)
+- [Funcionamento](#funcionamento)
+- [Como executar](#como-executar)
+- [Simulação e protótipo físico](#simulação-e-protótipo-físico)
+- [Limitações conhecidas](#limitações-conhecidas)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [Autores](#autores)
 
-Este é um **protótipo didático**: os valores dependem da calibração do sensor e **não representam uma medição de altura em centímetros**. A porcentagem exibida utiliza como referência o valor experimental 600.
+## Funcionalidades
 
-## Componentes do protótipo físico
+- Leitura contínua do nível de água por sensor analógico (pino `A0`).
+- Indicação progressiva por quatro LEDs (25%, 50%, 75% e limite de perigo).
+- Alerta sonoro que começa lento e acelera conforme a água sobe.
+- Display LCD 16×2 com a leitura bruta, a porcentagem do nível e o estado do som.
+- Teclado 4×3 para silenciar o buzzer, reativá-lo e gravar o limite de perigo.
+- Limite de perigo mantido na EEPROM, que persiste mesmo com o Arduino desligado.
 
-| Quantidade | Componente | Função |
+> Este é um protótipo didático. Os valores dependem da calibração do sensor e **não representam altura em centímetros**.
+
+## Componentes
+
+| Qtd. | Componente | Função |
 | :--: | --- | --- |
-| 1 | Arduino UNO R3 | Controle geral do circuito |
-| 1 | Sensor resistivo de nível de água, 3 pinos (`S`, `+`, `-`) | Leitura analógica do contato com a água |
-| 1 | LCD 16×2 com módulo I2C | Exibição da leitura, avisos e comandos |
-| 1 | Teclado de membrana matricial **4×3** | Controle do buzzer e gravação do limite |
-| 1 | Buzzer piezoelétrico passivo | Alerta sonoro |
-| 2 | LEDs verdes | Indicações iniciais de nível |
-| 1 | LED amarelo | Alerta intermediário |
-| 1 | LED vermelho | Indicação de perigo |
-| 4 | Resistores de 220 Ω | Limitação de corrente dos LEDs |
+| 1 | Arduino Uno R3 | Leitura do sensor, processamento e controle |
+| 1 | Sensor resistivo de nível de água, 3 pinos (`S`, `+`, `-`) | Gera um sinal analógico conforme a água cobre as trilhas |
+| 1 | LCD 16×2 com módulo I2C (endereço `0x27`) | Exibe leitura, porcentagem, estado do som e mensagens |
+| 1 | Teclado de membrana matricial 4×3 | Controle do buzzer e gravação do limite |
+| 1 | Buzzer | Alerta sonoro, controlado com `tone()` |
+| 2 | LED verde | Indicam os níveis de 25% e 50% |
+| 1 | LED amarelo | Indica o nível de 75% |
+| 1 | LED vermelho | Indica que o limite de perigo foi atingido |
+| 4 | Resistor de 220 Ω | Limitam a corrente dos LEDs |
 | 1 | Protoboard | Montagem do circuito |
-| Conforme montagem | Fios jumper e cabo USB | Conexões e alimentação |
+| — | Fios jumper e cabo USB | Conexões e alimentação |
 
-A listagem em CSV está em [`componentes/lista_componentes_prototipo_real.csv`](componentes/lista_componentes_prototipo_real.csv).
+A lista também está disponível em [`componentes/lista_componentes_prototipo_real.csv`](componentes/lista_componentes_prototipo_real.csv).
 
-### Atenção à diferença entre simulação e montagem real
+![Sensor de nível de água utilizado no protótipo](imagens/sensor-nivel-agua-real.png)
 
-| Item | Tinkercad / exportação original | Montagem física / código fornecido |
-| --- | --- | --- |
-| Sensor | Identificado como **sensor de umidade do solo** | **Sensor resistivo de nível de água** (foto abaixo) |
-| Teclado | **4×4** | **4×3** (4 linhas e 3 colunas) |
-| LCD I2C | Exportação menciona módulo com endereço **0x20** | O código usa `LiquidCrystal_I2C` no endereço **0x27** |
-| Interruptor DIP | Presente na exportação de componentes do Tinkercad | Não é utilizado pelo código `.ino` informado; presença na montagem real não confirmada |
+*Sensor resistivo de nível de água. Quanto mais água cobre as trilhas, maior o valor lido.*
 
-O CSV original foi preservado **somente como referência da simulação**, em [`componentes/bom_tinkercad_original.csv`](componentes/bom_tinkercad_original.csv). **Não use esse CSV como lista de compras do protótipo real.**
+## Circuito e ligações
 
-![Sensor resistivo de nível de água utilizado no protótipo físico](imagens/sensor-nivel-agua-real.png)
+| Pino do Arduino | Conexão |
+| --- | --- |
+| `A0` | Sinal `S` do sensor de nível |
+| `5V` | `+` do sensor e `VCC` do LCD |
+| `GND` | `-` do sensor, `GND` do LCD, negativo do buzzer e LEDs (via resistor) |
+| `A4` (SDA) e `A5` (SCL) | Comunicação I2C com o LCD |
+| `D8`, `D7`, `D6`, `D5` | Linhas 1 a 4 do teclado 4×3 |
+| `D4`, `D3`, `D2` | Colunas 1 a 3 do teclado 4×3 |
+| `D9` | LED verde 1 (com resistor de 220 Ω) |
+| `D10` | LED verde 2 (com resistor de 220 Ω) |
+| `D11` | LED amarelo (com resistor de 220 Ω) |
+| `D12` | LED vermelho (com resistor de 220 Ω) |
+| `D13` | Positivo do buzzer |
+
+**Mapa do teclado 4×3:**
+
+| Linha | Teclas | Pino |
+| :--: | :--: | :--: |
+| 1 | `1` `2` `3` | `D8` |
+| 2 | `4` `5` `6` | `D7` |
+| 3 | `7` `8` `9` | `D6` |
+| 4 | `*` `0` `#` | `D5` |
+
+As colunas 1, 2 e 3 correspondem aos pinos `D4`, `D3` e `D2`. A ordem dos terminais do conector do teclado varia conforme o fabricante, portanto identifique linhas e colunas antes de ligar.
 
 ## Funcionamento
 
-O Arduino lê o sensor pelo pino `A0` e acende os LEDs de forma **acumulativa**.
+### Níveis, LEDs e buzzer
 
-| Leitura analógica | Comportamento dos LEDs | Buzzer (quando habilitado) |
+O programa considera `600` como o valor máximo do sensor (lido com ele submerso) e calcula a porcentagem com `map(leitura, 0, 600, 0, 100)`. Os LEDs acendem de forma cumulativa conforme a leitura bruta:
+
+| Leitura | LEDs acesos | Buzzer (se ativo) |
 | --- | --- | --- |
-| Abaixo de 150 | Todos apagados | Desligado |
-| 150 a 299 | 1º verde aceso | Desligado |
-| 300 a 449 | 2 verdes acesos | Desligado |
-| A partir de 450 | 2 verdes + amarelo | Bipes de alerta |
-| A partir do limite configurado | LED vermelho também acende | Bipes críticos **se a leitura for ≥ 450** |
+| 0 a 149 | Nenhum | Silencioso |
+| 150 a 299 | Verde 1 | Silencioso |
+| 300 a 449 | Verde 1 e 2 | Silencioso |
+| 450 até o limite − 1 | Verde 1 e 2 + amarelo | Bipe lento: 1000 Hz, a cada 500 ms |
+| Limite ou mais (padrão 480) | Todos, incluindo o vermelho | Bipes de 2100 Hz que aceleram até a leitura 600 (pausa de 160 ms a 35 ms) |
 
-**Detalhes da calibração:** o valor máximo de referência do sensor está definido como `600`; o limite de perigo padrão é `480`, mas pode ser alterado e salvo pelo teclado. Por isso, o LCD pode mostrar `PERIGO: 100%` ao atingir o **limite configurado**, mesmo que a porcentagem calculada em relação a 600 ainda seja inferior a 100%.
+O limite de perigo começa em **480** (80% de 600). Quando a leitura o atinge, o LCD exibe `PERIGO: 100%`. Esse texto indica que o limite configurado foi alcançado, e não necessariamente que o sensor está totalmente submerso.
 
-### Comandos do teclado 4×3
+### Teclado
 
 | Tecla | Função |
 | :--: | --- |
-| `1` | Silenciar o buzzer |
-| `2` | Reativar o buzzer |
-| `3` | Salvar a **leitura atual** como limite de perigo na EEPROM |
-| `#` | Exibir uma ajuda temporária no LCD |
+| `1` | Desliga o buzzer |
+| `2` | Liga o buzzer |
+| `3` | Salva a leitura atual como novo limite de perigo (EEPROM) |
+| `#` | Exibe o menu de ajuda no LCD |
 
-**Observação:** embora a operação desejada mencione segurar `#`, o código disponibilizado atualmente mostra o menu **ao pressionar** a tecla. Não há detecção de pressão longa. O projeto **não possui mais cronômetro nem histórico de tempos**.
+As mensagens ficam na tela por 1 segundo. O estado do buzzer não é salvo: ao reiniciar, ele volta ligado.
 
-## Ligações elétricas de referência (código físico)
+### Display LCD
 
-| Pino do Arduino UNO | Componente / ligação |
+- **Linha 1:** leitura bruta do sensor e estado do som (`SOM` ou `MUDO`).
+- **Linha 2:** `Nivel: xx%` ou, ao atingir o limite, `PERIGO: 100%`.
+- A tela é atualizada a cada 120 ms.
+
+### Limite de perigo na EEPROM
+
+Ao ligar, o Arduino lê o endereço `0` da EEPROM e usa o valor salvo se ele estiver entre 101 e 600. Caso contrário (por exemplo, na primeira execução), mantém o padrão de 480.
+
+## Como executar
+
+**Requisitos:** [Arduino IDE](https://www.arduino.cc/en/software) e as bibliotecas abaixo.
+
+| Biblioteca | Instalação | Uso |
+| --- | --- | --- |
+| `Wire` | Inclusa no Arduino IDE | Comunicação I2C |
+| `EEPROM` | Inclusa no Arduino IDE | Salvar o limite de perigo |
+| `LiquidCrystal I2C` | Gerenciador de Bibliotecas | Controle do LCD 16×2 |
+| `Keypad` | Gerenciador de Bibliotecas | Leitura do teclado matricial |
+
+**Passos:**
+
+1. Monte o circuito conforme a seção [Circuito e ligações](#circuito-e-ligações).
+2. Abra `codigo/Indicador_Nivel_Agua/Indicador_Nivel_Agua.ino` na Arduino IDE.
+3. Selecione a placa **Arduino Uno** e a porta serial correta.
+4. Compile e envie o código para a placa.
+
+**Calibração:**
+
+1. Com o sensor seco, confirme que os LEDs estão apagados e o buzzer em silêncio.
+2. Mergulhe o sensor aos poucos e observe os LEDs acendendo em 150, 300 e 450.
+3. Leve a água até o ponto que deve ser considerado perigoso e pressione `3` para gravar o limite.
+4. Reinicie o Arduino e confirme que o limite foi mantido.
+
+Se o valor do sensor submerso for diferente de 600 na sua instalação, ajuste a constante `VALOR_MAX_SENSOR` no código.
+
+## Simulação e protótipo físico
+
+**[Abrir o projeto no Tinkercad](https://www.tinkercad.com/things/gcfk48sRPLc-projeto-sa-prevencao-de-alagamentos-residenciaias/editel?returnTo=https%3A%2F%2Fwww.tinkercad.com%2Fdashboard&sharecode=hNlV0GFYj3YyVG4pCysihhe0_Woj0avjWztFcsteBuY)**
+
+A lógica, a pinagem e o comportamento são os mesmos nos dois ambientes. O catálogo do Tinkercad não possui alguns dos modelos usados na maquete, então a simulação usa substitutos:
+
+| Item | Tinkercad | Protótipo físico |
+| --- | --- | --- |
+| Sensor | Sensor de umidade do solo | Sensor resistivo de nível de água |
+| Teclado | 4×4 (teclas `A` a `D` sem uso) | 4×3 |
+| LCD I2C | Módulo com endereço `0x20` | Módulo com endereço `0x27` |
+| Chave DIP | Presente no esquema, sem função no programa | Não utilizada |
+
+A exportação original de componentes do simulador está em [`simulador/bom_tinkercad_original.csv`](simulador/bom_tinkercad_original.csv) e serve apenas como referência da simulação.
+
+## Limitações conhecidas
+
+- **Mensagens bloqueiam a leitura:** durante os avisos do LCD (1 segundo), o programa usa `delay()` e não lê o sensor nem atualiza LEDs e buzzer.
+- **Limite abaixo de 450:** o LED vermelho acende antes de o buzzer começar, pois o som só inicia na leitura 450.
+- **Limites extremos:** valores de 100 ou menos não são recuperados após reiniciar (voltam para 480), e um limite de 600 gera divisão por zero no cálculo da pausa do buzzer. Recomenda-se gravar valores entre 101 e 599.
+- **Texto `MUDO`:** fica no limite direito da primeira linha do LCD e pode aparecer cortado.
+- **Tecla `#`:** o menu aparece ao pressionar a tecla; não há detecção de pressão longa.
+- **Medição aproximada:** a leitura varia com a condutividade da água, a salinidade e a oxidação das trilhas do sensor. O protótipo não deve ser o único dispositivo de segurança contra alagamentos reais.
+
+## Estrutura do repositório
+
+```
+├── codigo/
+│   └── Indicador_Nivel_Agua/
+│       └── Indicador_Nivel_Agua.ino    # Firmware do Arduino
+├── componentes/
+│   └── lista_componentes_prototipo_real.csv
+├── docs/
+│   └── Documentacao_Indicador_Nivel_Agua.pdf
+├── imagens/
+│   ├── montagem-tinkercad.png
+│   └── sensor-nivel-agua-real.png
+├── simulador/
+│   └── bom_tinkercad_original.csv
+└── README.md
+```
+
+A [documentação técnica completa](docs/Documentacao_Indicador_Nivel_Agua.pdf) inclui o esquema de ligações, o funcionamento detalhado, um roteiro de testes e o código-fonte.
+
+## Autores
+
+Projeto desenvolvido para a avaliação prática da unidade curricular **Internet das Coisas** do **SENAI/SC**.
+
+| | |
 | --- | --- |
-| `A0` | Sinal `S` do sensor de água |
-| `5V` / `GND` | Alimentação `+` / `-` do sensor; alimentação do LCD e terra comum |
-| `A4` (SDA) / `A5` (SCL) | Comunicação I2C do LCD |
-| `D8`, `D7`, `D6`, `D5` | Linhas 1 a 4 do teclado 4×3, nesta ordem |
-| `D4`, `D3`, `D2` | Colunas 1 a 3 do teclado 4×3, nesta ordem |
-| `D9` / `D10` | LEDs verdes 1 e 2 (cada um com resistor) |
-| `D11` | LED amarelo (com resistor) |
-| `D12` | LED vermelho (com resistor) |
-| `D13` | Positivo do buzzer; negativo ao `GND` |
-
-Confira a pinagem **real** do teclado e do módulo do LCD antes de conectar: a ordem dos terminais pode variar entre fabricantes. Consulte a [documentação técnica](docs/Documentacao_Tecnica.pdf) para mais detalhes.
-
-## Código e bibliotecas
-
-**Código-fonte:** [`codigo/Indicador_Nivel_Agua/Indicador_Nivel_Agua.ino`](codigo/Indicador_Nivel_Agua/Indicador_Nivel_Agua.ino).
-
-A implementação utiliza:
-
-- `Wire.h` — comunicação I2C (incluída com a plataforma Arduino);
-- `LiquidCrystal_I2C.h` — controle do LCD 16×2 I2C;
-- `Keypad.h` — leitura do teclado matricial;
-- `EEPROM.h` — armazenamento não volátil do limite (incluída na plataforma Arduino AVR).
-
-Para carregar no Arduino físico:
-
-1. Instale e abra a **Arduino IDE**.
-2. Instale as bibliotecas `LiquidCrystal_I2C` e `Keypad` pelo Gerenciador de Bibliotecas, se necessário.
-3. Abra `codigo/Indicador_Nivel_Agua/Indicador_Nivel_Agua.ino`.
-4. Selecione a placa **Arduino Uno** e a porta serial correta.
-5. Confirme o endereço I2C do LCD (`0x27` no código), a pinagem e a montagem; depois compile e envie para a placa.
-
-> O código foi mantido conforme o arquivo fornecido para este repositório. Não foram feitas alterações silenciosas para adaptar o teclado 4×4 do simulador ao 4×3 físico.
-
-## Simulação no Tinkercad
-
-**[Abrir projeto no Tinkercad](https://www.tinkercad.com/things/gcfk48sRPLc-projeto-sa-prevencao-de-alagamentos-residenciaias/editel?returnTo=https%3A%2F%2Fwww.tinkercad.com%2Fdashboard&sharecode=hNlV0GFYj3YyVG4pCysihhe0_Woj0avjWztFcsteBuY)**
-
-A montagem do simulador usa componentes equivalentes disponíveis na plataforma, que **não necessariamente correspondem aos componentes da montagem física**. A fotografia do circuito está em [`imagens/montagem-tinkercad.png`](imagens/montagem-tinkercad.png). O endereço I2C e o teclado físico 4×3 devem ser considerados ao transportar o projeto entre a simulação e o Arduino real.
-
-A execução do link e a compatibilidade integral do `.ino` físico com o Tinkercad **não foram verificadas** durante a organização deste repositório.
-
-## Organização do repositório
-
-| Pasta / arquivo | Conteúdo |
-| --- | --- |
-| `codigo/Indicador_Nivel_Agua/` | Sketch `.ino` da versão física |
-| `componentes/` | Lista correta do protótipo físico e CSV original exportado do Tinkercad |
-| `docs/` | Documentação técnica em PDF e DOCX, critérios do professor, histórico e roteiro de testes |
-| `docs/historico/` | PDF da documentação antiga, preservado como referência histórica |
-| `imagens/` | Foto do sensor real e captura da montagem no Tinkercad |
-| `imagens/prototipo-fisico/` | Destinado às futuras fotos da montagem real |
-| `simulador/` | Link e informações de reprodução no Tinkercad |
-
-
+| **Estudantes** | Caetano Gbur Petry e Guilherme Arthur Silveira |
+| **Turma** | TDESS V01/2025 |
+| **Docente** | Sergio Luiz da Silveira |
