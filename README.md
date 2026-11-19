@@ -188,7 +188,7 @@ A exportação original de componentes do simulador está em [`simulador/bom_tin
 └── README.md
 ```
 
-A [documentação técnica completa](docs/Documentacao_Indicador_Nivel_Agua.pdf) inclui o esquema de ligações, o funcionamento detalhado, um roteiro de testes e o código-fonte.
+A [documentação técnica completa](docs/Documentacao_SA_Indicador_Nivel_Agua.pdf) inclui o esquema de ligações, o funcionamento detalhado, um roteiro de testes e o código-fonte.
 
 ## Autores
 
