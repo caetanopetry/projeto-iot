@@ -4,7 +4,7 @@
 #include <EEPROM.h>
 
 // ---------- Configuração do LCD I2C Físico ----------
-#define ende 0x27
+#define ende 0x27 
 #define col 16
 #define lin 2
 
@@ -18,7 +18,7 @@ const int LED_PINS[4] = {9, 10, 11, 12};
 const int BUZZER_PIN = 13;
 
 // Calibração do Sensor Real (Teto máximo de leitura quando submerso)
-const int VALOR_MAX_SENSOR = 600;
+const int VALOR_MAX_SENSOR = 600; 
 
 // ---------- Teclado Matricial 4x3 ----------
 const byte LINHAS = 4; // 4 linhas
@@ -130,7 +130,7 @@ void trataTecla(char tecla, int leitura) {
 }
 
 void setup() {
-  lcd.init();
+  lcd.init();          
   lcd.backlight();
 
   for (int i = 0; i < 4; i++) {
@@ -185,3 +185,6 @@ void loop() {
     }
   }
 }
+
+
+
